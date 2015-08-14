@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"os"
+	"strconv"
 
 	"golang.org/x/crypto/bcrypt"
 
@@ -27,6 +28,7 @@ func main() {
 		cli.StringFlag{Name: "password, p", Usage: "password"},
 		cli.StringFlag{Name: "firstname, f", Usage: "firstname"},
 		cli.StringFlag{Name: "surname, s", Usage: "surname"},
+		cli.StringFlag{Name: "group, g", Usage: "groupID"},
 		cli.HelpFlag,
 	}...)
 	cmd.RunAndExitOnError()
@@ -54,6 +56,7 @@ func add(ctx *cli.Context) error {
 	var password = ctx.String("password")
 	var firstname = ctx.String("firstname")
 	var surname = ctx.String("surname")
+	var groupID = ctx.String("group")
 
 	if mail == "" || password == "" || firstname == "" || surname == "" {
 		logs.Error("All arguments are required")
@@ -65,11 +68,21 @@ func add(ctx *cli.Context) error {
 		panic(err)
 	}
 
+	var convGroupID = 0
+	if groupID != "" {
+		convGroupID, err = strconv.Atoi(groupID)
+		if err != nil {
+			logs.Error(err)
+			return err
+		}
+	}
+
 	u := &models.User{
 		Mail:      sPtr(mail),
 		Password:  sPtr(string(passwordHash)),
 		Firstname: sPtr(firstname),
 		Surname:   sPtr(surname),
+		GroupID:   uint(convGroupID),
 	}
 	errs := u.Validate()
 
@@ -108,6 +121,11 @@ func add(ctx *cli.Context) error {
 		return err
 	}
 
-	logs.Debug("New user :  -Mail : %s  -Password : %s", mail, password)
+	logs.Debug("New user :")
+	logs.Debug("-Mail : %s", mail)
+	logs.Debug("-Password : %s", password)
+	logs.Debug("-Firstname : %s", firstname)
+	logs.Debug("-Surname : %s", surname)
+	logs.Debug("-GroupID : %d", convGroupID)
 	return nil
 }
