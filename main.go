@@ -1,3 +1,4 @@
+// Use to insert a new contact into the database
 package main
 
 import (
